@@ -1,0 +1,559 @@
+{
+  "name": "Ushna's Work",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Address }}",
+        "options": {
+          "systemMessage": "You are a geocoding assistant. \nGiven an address, return accurate latitude and longitude.\n\nReturn only valid JSON:\n{\n  \"latitude\": <decimal>,\n  \"longitude\": <decimal>\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        -176
+      ],
+      "id": "30f87214-b0b6-497c-97e2-5e7cbbedc488",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        208,
+        48
+      ],
+      "id": "caf4177b-6d34-4394-9852-23297ccf7ff7",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "FDmuTgGNEheZYIb2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- FIXED FOR MERGE OUTPUT WITH FLAT FIELDS ---\n// Input example: { Address: \"...\", output: \"{...}\" }\n\nreturn $input.all().map(item => {\n  const data = { ...item.json }; // make a shallow copy\n  const rawOutput = data.output;\n\n  // Remove the unwanted \"output\" field\n  delete data.output;\n\n  let latitude = null;\n  let longitude = null;\n\n  try {\n    let raw = rawOutput;\n    if (typeof raw === \"string\") {\n      // Clean and parse the stringified JSON\n      raw = raw.replace(/\\\\n/g, \"\")\n               .replace(/\\n/g, \"\")\n               .replace(/\\\\/g, \"\")\n               .trim();\n      raw = JSON.parse(raw);\n    }\n    latitude = raw.latitude ?? raw.lat ?? null;\n    longitude = raw.longitude ?? raw.lng ?? null;\n  } catch (e) {\n    // Regex fallback if JSON parsing fails\n    const latMatch = String(rawOutput).match(/latitude[\"']?\\s*[:=]\\s*(-?\\d+(\\.\\d+)?)/i);\n    const lonMatch = String(rawOutput).match(/longitude[\"']?\\s*[:=]\\s*(-?\\d+(\\.\\d+)?)/i);\n    latitude = latMatch ? parseFloat(latMatch[1]) : null;\n    longitude = lonMatch ? parseFloat(lonMatch[1]) : null;\n  }\n\n  // Return cleaned data + extracted lat/lon\n  return {\n    json: {\n      ...data,       // original sheet fields (without \"output\")\n      latitude,\n      longitude\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -192
+      ],
+      "id": "271e68d3-e92a-45f3-9c71-2902b2bc704c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "latitude": "={{ $json.latitude }}",
+            "longitude": "={{ $json.longitude }}",
+            "Serial No.": "={{ $json['Serial No.'] }}"
+          },
+          "matchingColumns": [
+            "Serial No."
+          ],
+          "schema": [
+            {
+              "id": "Serial No.",
+              "displayName": "Serial No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Business Name",
+              "displayName": "Business Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "longitude",
+              "displayName": "longitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "latitude",
+              "displayName": "latitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Contact",
+              "displayName": "Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Rates",
+              "displayName": "Rates",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1056,
+        -192
+      ],
+      "id": "2a40b351-86f3-4144-95ae-b76265e120d1",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mz04RtTjGcLsjFe4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        -192
+      ],
+      "id": "420bb7d5-2c26-470b-a101-b440b0394f5d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -192
+      ],
+      "id": "843fdd13-5be6-4773-9e10-d06f94c2ea7f",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "qWJpj4bNWfuMhpy8",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "/map/data",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        560
+      ],
+      "id": "4f733452-de9a-4ae2-beec-5dbe5918648c",
+      "name": "Map Data API",
+      "webhookId": "955a4a30-a975-405b-85a3-be97466ed900"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        560
+      ],
+      "id": "e0b9b598-47b5-4d24-b1a0-5ee8df5e13d1",
+      "name": "Read Sheet Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mz04RtTjGcLsjFe4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and clean Google Sheets data for frontend use\n// Ensures consistent keys and numeric coordinates\n\nreturn $input.all().map(item => {\n  const row = item.json;\n\n  return {\n    json: {\n      name: row[\"Name\"] || row[\"name\"] || \"\",\n      business_name: row[\"Business Name\"] || row[\"business_name\"] || \"\",\n      type: row[\"Type\"] || row[\"type\"] || \"\",\n      address: row[\"Address\"] || row[\"address\"] || \"\",\n      email: row[\"Email\"] || row[\"email\"] || \"\",\n      contact: row[\"Contact\"] || row[\"contact\"] || \"\",\n      rates: row[\"Rates\"] || row[\"rates\"] || \"\",\n      latitude: parseFloat(row[\"Latitude\"] || row[\"latitude\"] || 0),\n      longitude: parseFloat(row[\"Longitude\"] || row[\"longitude\"] || 0)\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        560
+      ],
+      "id": "ff2dcd05-c9c6-4891-b0ad-4a7a7548531f",
+      "name": "Normalize"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        704,
+        560
+      ],
+      "id": "5c3fce23-2b89-4dfa-9cfb-6ecb8c178148",
+      "name": "Send Response"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DjeVt6w4I04MOPF4LujqwHPA6V7EWeINgVYmPbNhQL4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        160,
+        352
+      ],
+      "id": "40f68f5b-a0e9-42b4-9faf-729a36a771f0",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mz04RtTjGcLsjFe4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the webhook input (first item) — contains the search parameters\nconst webhookData = $input.all()[0].json;\n\n// Extract latitude, longitude, and radius from the webhook body\nconst centerLat = parseFloat(webhookData.body.latitude);\nconst centerLon = parseFloat(webhookData.body.longitude);\nconst radius = parseFloat(webhookData.body.radius);\n\nif (isNaN(centerLat) || isNaN(centerLon) || isNaN(radius)) {\n  throw new Error(\"Missing or invalid latitude, longitude, or radius in webhook body.\");\n}\n\n// Get all sheet rows — these start from the 2nd item onward\nconst sheetRows = $input.all().slice(1);\n\n// Haversine distance formula (in kilometers)\nfunction haversine(lat1, lon1, lat2, lon2) {\n  const R = 6371;\n  const dLat = (lat2 - lat1) * Math.PI / 180;\n  const dLon = (lon2 - lon1) * Math.PI / 180;\n  const a =\n    Math.sin(dLat / 2) ** 2 +\n    Math.cos(lat1 * Math.PI / 180) *\n    Math.cos(lat2 * Math.PI / 180) *\n    Math.sin(dLon / 2) ** 2;\n  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));\n}\n\n// Filter by distance\nconst filtered = sheetRows.filter(item => {\n  const rec = item.json;\n  const lat2 = parseFloat(rec.latitude);\n  const lon2 = parseFloat(rec.longitude);\n\n  if (isNaN(lat2) || isNaN(lon2)) return false;\n\n  const dist = haversine(centerLat, centerLon, lat2, lon2);\n  return dist <= radius;\n});\n\n// Return filtered rows or message if empty\nif (filtered.length === 0) {\n  return [{ json: { message: \"No results found within given radius.\" } }];\n}\n\nreturn filtered;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        336
+      ],
+      "id": "77bb4afb-9ceb-4b4b-8c4d-9c578f729aa6",
+      "name": "Code in JavaScript1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        480,
+        336
+      ],
+      "id": "23d0f13b-0095-44f8-bcf1-703d28617a56",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/map/query",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        176
+      ],
+      "id": "3d92a68a-3e8e-4103-83e5-4b52f98c8f0d",
+      "name": "Webhook (POST /map/query)",
+      "webhookId": "62a2ac9c-170e-4a38-a41c-0f2bfec074d4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Data API": {
+      "main": [
+        [
+          {
+            "node": "Read Sheet Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Sheet Data": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize": {
+      "main": [
+        [
+          {
+            "node": "Send Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook (POST /map/query)": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7961b89b-1f73-4614-a543-7321fe8a8c14",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b9fafb87dfb0c2732c6c0a89d0e0d5f8cbe10d14afc194585414ee0cf88ed7de"
+  },
+  "id": "GS5ZQvbPmY1323C7",
+  "tags": []
+}

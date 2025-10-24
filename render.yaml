@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: n8n-workflow
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    envVars:
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: true
+      - key: N8N_BASIC_AUTH_USER
+        value: admin
+      - key: N8N_BASIC_AUTH_PASSWORD
+        fromService:
+          type: secret
+          name: n8n-password
+      - key: N8N_HOST
+        value: 0.0.0.0
+      - key: N8N_PORT
+        value: 5678
+      - key: N8N_PROTOCOL
+        value: https
+      - key: WEBHOOK_URL
+        fromService:
+          type: envVar
+          name: RENDER_EXTERNAL_URL
+      - key: GENERIC_TIMEZONE
+        value: UTC
+      - key: GROQ_API_KEY
+        fromService:
+          type: secret
+          name: groq-api-key
+      - key: GOOGLE_APPLICATION_CREDENTIALS_JSON
+        fromService:
+          type: secret
+          name: google-credentials
+    healthCheckPath: /healthz
+    autoDeploy: true
