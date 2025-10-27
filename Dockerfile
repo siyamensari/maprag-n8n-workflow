@@ -23,5 +23,5 @@ USER node
 # Expose the port
 EXPOSE 5678
 
-# Start n8n
-CMD ["n8n", "start"]
+# Start n8n (let the base image's default command handle it)
+CMD ["n8n"]
