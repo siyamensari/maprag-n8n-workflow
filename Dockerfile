@@ -11,20 +11,17 @@ ENV N8N_PROTOCOL=http
 ENV WEBHOOK_URL=https://your-app-name.onrender.com
 ENV GENERIC_TIMEZONE=UTC
 
-# Create directories for n8n data
-RUN mkdir -p /home/node/.n8n
+# Use root user for setup
+USER root
 
-# Copy the workflow file
-COPY workflows/ /home/node/.n8n/workflows/
-
-# Set proper permissions
-RUN chown -R node:node /home/node/.n8n
-
-# Expose the port
-EXPOSE 5678
+# Copy and set permissions in one step
+COPY --chown=node:node workflows/ /home/node/.n8n/workflows/
 
 # Switch to node user
 USER node
+
+# Expose the port
+EXPOSE 5678
 
 # Start n8n
 CMD ["n8n", "start"]
